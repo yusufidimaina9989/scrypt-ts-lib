@@ -484,7 +484,7 @@ describe('Test Blockchain', () => {
         expect(result.success, result.error).to.be.true
     })
 
-    it('should pass lastTxInBlock', () => {
+    it('should pass isLastTxInBlock', () => {
         let txid = Sha256(
             reverseByteString(
                 toByteString(
@@ -592,7 +592,7 @@ describe('Test Blockchain', () => {
         }
 
         let result = blockchainTest.verify((self) => {
-            self.testLastTxInBlock(txid, bh, merkleProof, true)
+            self.testLastTxInBlock(merkleProof, true)
         })
         expect(result.success, result.error).to.be.true
 
@@ -674,7 +674,7 @@ describe('Test Blockchain', () => {
         }
         merkleProof = prepProofFromWoc(fromWoC)
         result = blockchainTest.verify((self) => {
-            self.testLastTxInBlock(txid, bh, merkleProof, false)
+            self.testLastTxInBlock(merkleProof, false)
         })
         expect(result.success, result.error).to.be.true
 
@@ -756,7 +756,7 @@ describe('Test Blockchain', () => {
         }
         merkleProof = prepProofFromWoc(fromWoC)
         result = blockchainTest.verify((self) => {
-            self.testLastTxInBlock(txid, bh, merkleProof, false)
+            self.testLastTxInBlock(merkleProof, false)
         })
         expect(result.success, result.error).to.be.true
     })
@@ -925,340 +925,370 @@ describe('Test Blockchain', () => {
         expect(result.success, result.error).to.be.true
     })
 
-    //it('should pass txIndex', () => {
-    //    let txIdx = 30553n
-    //    let fromWoC =
-    //    {
-    //        "blockHash": "0000000000000000066242e860957a42b56cb11f1cc02671759453aa8657e6f7",
-    //        "branches": [
-    //            {
-    //                "hash": "0401c91563f59677afd4a01505fbd6fd449f770fd1e8383dfac7494d369bfb79",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "fcaf88405fcd461c3191dcb1805c4b8e432ac9154d029b9d4dbafd4a604a3e26",
-    //                "pos": "R"
-    //            },
-    //            {
-    //                "hash": "d8a7fbc10cb577deadd5306356d7b7e69c38ffbb40d93f069c693a4dd09a1856",
-    //                "pos": "R"
-    //            },
-    //            {
-    //                "hash": "96e2dedfcc2d1fa647c1e6735e85c77f050f95f1b660769219cb4657709adcfb",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "b8eb5366c8bcf10a20715b1e434c073682071d2b927f2b0cdb5c70838f526d1c",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "c5e842a5fde2dda4df7ea89d84c7d423449b0ee211bdc1ae4decf14488c44979",
-    //                "pos": "R"
-    //            },
-    //            {
-    //                "hash": "9e7f54bc457377d60ad23f7d05d702cd0de84f4472b2afe0f4410229b0c89bb3",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "d34e2650b04d10249c35579bf61237d1586ad2cec22945e1cda046ee69ae58a0",
-    //                "pos": "R"
-    //            },
-    //            {
-    //                "hash": "20856df7e2a88c96b39ba53aade13d2e9dbb450785e446f2f1d03d2894e5ea44",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "e353fa05c3f3b980438b8e44c7fea359d3adeeba06db917823ee5609bc42103c",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "e85443796bc4f195be5ae9fa8eca1ec122ce4b465c926ee7f01f46f5a22fa4f2",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "e63c979b5223041cbaaa2ae55b6365bd866514308eced42a056327904c677cd8",
-    //                "pos": "R"
-    //            },
-    //            {
-    //                "hash": "1f956b271899f6e5a4e5145cf783811fc1b90b8fb7a00cb3d8ae9f7645b18cc2",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "3a3a8b77fd1327753741927800f40ab47b9dfc7fb31225cb1be9f5baf4d8f68c",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "c7d326a0fefc50a8005bedd641c869daca0443deb5cf6dbd9d30bca6b6dab8b0",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "90f076ecebc3d59f640eaba948a1873935ee1b1959e4eac0811c625ec58f8149",
-    //                "pos": "R"
-    //            }
-    //        ],
-    //        "hash": "48ad6b3d86e79f8c7573bba93aad67964bac73f5205f55957fccc196a511383a",
-    //        "merkleRoot": "3ea59132fc323e633225e94803b4c78369e3e6838f1ef7c7c5cd6ac71b669498"
-    //    }
-    //    let merkleProof: MerkleProof = prepProofFromWoc(fromWoC)
+    it('should pass txIndex', () => {
+        let txIdx = 30553n
+        let fromWoC = {
+            blockHash:
+                '0000000000000000066242e860957a42b56cb11f1cc02671759453aa8657e6f7',
+            branches: [
+                {
+                    hash: '0401c91563f59677afd4a01505fbd6fd449f770fd1e8383dfac7494d369bfb79',
+                    pos: 'L',
+                },
+                {
+                    hash: 'fcaf88405fcd461c3191dcb1805c4b8e432ac9154d029b9d4dbafd4a604a3e26',
+                    pos: 'R',
+                },
+                {
+                    hash: 'd8a7fbc10cb577deadd5306356d7b7e69c38ffbb40d93f069c693a4dd09a1856',
+                    pos: 'R',
+                },
+                {
+                    hash: '96e2dedfcc2d1fa647c1e6735e85c77f050f95f1b660769219cb4657709adcfb',
+                    pos: 'L',
+                },
+                {
+                    hash: 'b8eb5366c8bcf10a20715b1e434c073682071d2b927f2b0cdb5c70838f526d1c',
+                    pos: 'L',
+                },
+                {
+                    hash: 'c5e842a5fde2dda4df7ea89d84c7d423449b0ee211bdc1ae4decf14488c44979',
+                    pos: 'R',
+                },
+                {
+                    hash: '9e7f54bc457377d60ad23f7d05d702cd0de84f4472b2afe0f4410229b0c89bb3',
+                    pos: 'L',
+                },
+                {
+                    hash: 'd34e2650b04d10249c35579bf61237d1586ad2cec22945e1cda046ee69ae58a0',
+                    pos: 'R',
+                },
+                {
+                    hash: '20856df7e2a88c96b39ba53aade13d2e9dbb450785e446f2f1d03d2894e5ea44',
+                    pos: 'L',
+                },
+                {
+                    hash: 'e353fa05c3f3b980438b8e44c7fea359d3adeeba06db917823ee5609bc42103c',
+                    pos: 'L',
+                },
+                {
+                    hash: 'e85443796bc4f195be5ae9fa8eca1ec122ce4b465c926ee7f01f46f5a22fa4f2',
+                    pos: 'L',
+                },
+                {
+                    hash: 'e63c979b5223041cbaaa2ae55b6365bd866514308eced42a056327904c677cd8',
+                    pos: 'R',
+                },
+                {
+                    hash: '1f956b271899f6e5a4e5145cf783811fc1b90b8fb7a00cb3d8ae9f7645b18cc2',
+                    pos: 'L',
+                },
+                {
+                    hash: '3a3a8b77fd1327753741927800f40ab47b9dfc7fb31225cb1be9f5baf4d8f68c',
+                    pos: 'L',
+                },
+                {
+                    hash: 'c7d326a0fefc50a8005bedd641c869daca0443deb5cf6dbd9d30bca6b6dab8b0',
+                    pos: 'L',
+                },
+                {
+                    hash: '90f076ecebc3d59f640eaba948a1873935ee1b1959e4eac0811c625ec58f8149',
+                    pos: 'R',
+                },
+            ],
+            hash: '48ad6b3d86e79f8c7573bba93aad67964bac73f5205f55957fccc196a511383a',
+            merkleRoot:
+                '3ea59132fc323e633225e94803b4c78369e3e6838f1ef7c7c5cd6ac71b669498',
+        }
+        let merkleProof: MerkleProof = prepProofFromWoc(fromWoC)
 
-    //    let result = blockchainTest.verify((self) => {
-    //        self.testTxIndex(merkleProof, txIdx)
-    //    })
-    //    expect(result.success, result.error).to.be.true
+        let txid = Sha256(reverseByteString(fromWoC.hash, 32n))
 
-    //    txIdx = 577n
-    //    fromWoC =
-    //    {
-    //        "blockHash": "0000000000000000066242e860957a42b56cb11f1cc02671759453aa8657e6f7",
-    //        "branches": [
-    //            {
-    //                "hash": "b525ed2ff338cb4dd28ffa0f0a9ebfcaf9b103efcc269529331c596621095017",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "867d0e9e1177149debb7de90ef356b04d33672af757e2c2882eb62ea8ce505e2",
-    //                "pos": "R"
-    //            },
-    //            {
-    //                "hash": "f6f89694298a39efe2c73968c07c15b9f1d795567075b75f1e98ebcb40864396",
-    //                "pos": "R"
-    //            },
-    //            {
-    //                "hash": "ae4a89f3a68eca4c2e9402762593f40be142e30f24e67c18ac836db2f7733198",
-    //                "pos": "R"
-    //            },
-    //            {
-    //                "hash": "c0adf732dfb26216a6a8c79dba55e61480f1444e41377061600d239a31dbf773",
-    //                "pos": "R"
-    //            },
-    //            {
-    //                "hash": "cec5e5560d6d77ea92f9f0e4843bff152e00aaead29136a7399713f52cbc6980",
-    //                "pos": "R"
-    //            },
-    //            {
-    //                "hash": "8d78b7ae3bbacba3580aedfa243fa70029ca68de70ad6117acf00336decea76b",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "42f83496b7bc8ebedacbb564e6b19dbb803576e33224e01f1283b651e11604d3",
-    //                "pos": "R"
-    //            },
-    //            {
-    //                "hash": "bd83d71864ecfd905e2db7776bbb7f1c8e083d0278053d282fd5910aee7481be",
-    //                "pos": "R"
-    //            },
-    //            {
-    //                "hash": "b7d3f3b6ac73c8cab791d00a16970f0072e4ca52ed43cf4b311362f7d4129bee",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "c343368c6e24314fc6f94cd87eb3cac11979c3ace7df9694532fef207c774124",
-    //                "pos": "R"
-    //            },
-    //            {
-    //                "hash": "3c164647fd74b3b3fd8ee71d494562d25fb119ea5303a9e8de6fcd198c938ee1",
-    //                "pos": "R"
-    //            },
-    //            {
-    //                "hash": "9d5ff25742c84801d50c6edb7d05edb84b1343666465cad89894241a9542bdde",
-    //                "pos": "R"
-    //            },
-    //            {
-    //                "hash": "7371f3af322ee0ce5d4578e0a1016902b632692bbc88a7aae199a7187225a6af",
-    //                "pos": "R"
-    //            },
-    //            {
-    //                "hash": "437126631d268c132cb1a603661b965a1ed5b34b3bea27f525aeaa3be7b8ed50",
-    //                "pos": "R"
-    //            },
-    //            {
-    //                "hash": "90f076ecebc3d59f640eaba948a1873935ee1b1959e4eac0811c625ec58f8149",
-    //                "pos": "R"
-    //            }
-    //        ],
-    //        "hash": "22101383b720e5d36f034626f6226324359dd7a6873dbc4a5bd5a8201ea74d69",
-    //        "merkleRoot": "3ea59132fc323e633225e94803b4c78369e3e6838f1ef7c7c5cd6ac71b669498"
-    //    }
-    //    merkleProof = prepProofFromWoc(fromWoC)
+        let result = blockchainTest.verify((self) => {
+            self.testTxIndex(txid, merkleProof, txIdx)
+        })
+        expect(result.success, result.error).to.be.true
 
-    //    result = blockchainTest.verify((self) => {
-    //        self.testTxIndex(merkleProof, txIdx)
-    //    })
-    //    expect(result.success, result.error).to.be.true
-    //
-    //    txIdx = 40553n
-    //    fromWoC =
-    //    {
-    //        "blockHash": "0000000000000000066242e860957a42b56cb11f1cc02671759453aa8657e6f7",
-    //        "branches": [
-    //            {
-    //                "hash": "d371c668aed1713efbaa400037c0348a05e3281c3e87a77a9cab61216c1cd6a3",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "ab8c463675f1cf6fc0afc202e90e0e97f054eaa5a61a1b9bb7e4105ba7bd15a4",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "5a8791d2fa9aff57c88714c273c49d8535343c7215508c58af5cd5814434fb64",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "694f599d5ef09f2eed1ae6a2416838766801a920a5c48134eefa5704812de0cf",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "0ea2a1d74b70f7aa09e39eb8e8320cbafde281fd33398f3559a205df9c514906",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "03c4eb008eab9c5ce3fc682341dceef454e8afab6c910d4fd839b4a5552cf0dd",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "b36dedc394a4b6b1b141c50c9e0dd0e248e61688f915182d09502228d9942fc3",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "1ec1223bd12009dd2025e11d391dc4484bb3807ac211642b3c9f506ac599666e",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "c4b76eb5633947b8c8812cc492a8edba620663bfb09da79dfe36f8bd7bb574ee",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "66b1ab0bfce9f922c65e3bea549ee3b624c6ac8476e8a3a9a3d1819ea6b994fa",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "a62adcfea094e794037050904288208c5525b4753db86cb31a1bd3294954cc08",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "898d0bf992440142d15d44fcaff0c6e62e4a17ca083f401263e4f49fa5edb30a",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "5f969a6bef1cecd897517f583dbebc11ba08b0e4a251400db252978e58a9c44b",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "de0e13890adf08569ada47a82bf2efbc5b32b2f93d2c347f59896f3fb21eaba6",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "ab14dead4511ef1ff71d639450f657850374c9f128e4b299bbbcd4695318546d",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "65433ea178bb0d6f0ae19cfe21b858fbadc974616fe7d088514b9ccaf626ea6e",
-    //                "pos": "L"
-    //            }
-    //        ],
-    //        "hash": "b52e6ba02e124eb245b42bf8cb95b6aedc0c7a67b313f23584d80dca23e57212",
-    //        "merkleRoot": "3ea59132fc323e633225e94803b4c78369e3e6838f1ef7c7c5cd6ac71b669498"
-    //    }
-    //    merkleProof = prepProofFromWoc(fromWoC)
+        txIdx = 577n
+        fromWoC = {
+            blockHash:
+                '0000000000000000066242e860957a42b56cb11f1cc02671759453aa8657e6f7',
+            branches: [
+                {
+                    hash: 'b525ed2ff338cb4dd28ffa0f0a9ebfcaf9b103efcc269529331c596621095017',
+                    pos: 'L',
+                },
+                {
+                    hash: '867d0e9e1177149debb7de90ef356b04d33672af757e2c2882eb62ea8ce505e2',
+                    pos: 'R',
+                },
+                {
+                    hash: 'f6f89694298a39efe2c73968c07c15b9f1d795567075b75f1e98ebcb40864396',
+                    pos: 'R',
+                },
+                {
+                    hash: 'ae4a89f3a68eca4c2e9402762593f40be142e30f24e67c18ac836db2f7733198',
+                    pos: 'R',
+                },
+                {
+                    hash: 'c0adf732dfb26216a6a8c79dba55e61480f1444e41377061600d239a31dbf773',
+                    pos: 'R',
+                },
+                {
+                    hash: 'cec5e5560d6d77ea92f9f0e4843bff152e00aaead29136a7399713f52cbc6980',
+                    pos: 'R',
+                },
+                {
+                    hash: '8d78b7ae3bbacba3580aedfa243fa70029ca68de70ad6117acf00336decea76b',
+                    pos: 'L',
+                },
+                {
+                    hash: '42f83496b7bc8ebedacbb564e6b19dbb803576e33224e01f1283b651e11604d3',
+                    pos: 'R',
+                },
+                {
+                    hash: 'bd83d71864ecfd905e2db7776bbb7f1c8e083d0278053d282fd5910aee7481be',
+                    pos: 'R',
+                },
+                {
+                    hash: 'b7d3f3b6ac73c8cab791d00a16970f0072e4ca52ed43cf4b311362f7d4129bee',
+                    pos: 'L',
+                },
+                {
+                    hash: 'c343368c6e24314fc6f94cd87eb3cac11979c3ace7df9694532fef207c774124',
+                    pos: 'R',
+                },
+                {
+                    hash: '3c164647fd74b3b3fd8ee71d494562d25fb119ea5303a9e8de6fcd198c938ee1',
+                    pos: 'R',
+                },
+                {
+                    hash: '9d5ff25742c84801d50c6edb7d05edb84b1343666465cad89894241a9542bdde',
+                    pos: 'R',
+                },
+                {
+                    hash: '7371f3af322ee0ce5d4578e0a1016902b632692bbc88a7aae199a7187225a6af',
+                    pos: 'R',
+                },
+                {
+                    hash: '437126631d268c132cb1a603661b965a1ed5b34b3bea27f525aeaa3be7b8ed50',
+                    pos: 'R',
+                },
+                {
+                    hash: '90f076ecebc3d59f640eaba948a1873935ee1b1959e4eac0811c625ec58f8149',
+                    pos: 'R',
+                },
+            ],
+            hash: '22101383b720e5d36f034626f6226324359dd7a6873dbc4a5bd5a8201ea74d69',
+            merkleRoot:
+                '3ea59132fc323e633225e94803b4c78369e3e6838f1ef7c7c5cd6ac71b669498',
+        }
+        merkleProof = prepProofFromWoc(fromWoC)
 
-    //    result = blockchainTest.verify((self) => {
-    //        self.testTxIndex(merkleProof, txIdx)
-    //    })
-    //    expect(result.success, result.error).to.be.true
-    //})
-    //
-    //
-    //it('should pass blockTxCount', () => {
-    //    let txCount = 40554n
-    //    let lastTxId = Sha256(reverseByteString(toByteString('b52e6ba02e124eb245b42bf8cb95b6aedc0c7a67b313f23584d80dca23e57212'), 32n))
-    //    let fromWoC =
-    //    {
-    //        "blockHash": "0000000000000000066242e860957a42b56cb11f1cc02671759453aa8657e6f7",
-    //        "branches": [
-    //            {
-    //                "hash": "d371c668aed1713efbaa400037c0348a05e3281c3e87a77a9cab61216c1cd6a3",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "ab8c463675f1cf6fc0afc202e90e0e97f054eaa5a61a1b9bb7e4105ba7bd15a4",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "5a8791d2fa9aff57c88714c273c49d8535343c7215508c58af5cd5814434fb64",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "694f599d5ef09f2eed1ae6a2416838766801a920a5c48134eefa5704812de0cf",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "0ea2a1d74b70f7aa09e39eb8e8320cbafde281fd33398f3559a205df9c514906",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "03c4eb008eab9c5ce3fc682341dceef454e8afab6c910d4fd839b4a5552cf0dd",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "b36dedc394a4b6b1b141c50c9e0dd0e248e61688f915182d09502228d9942fc3",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "1ec1223bd12009dd2025e11d391dc4484bb3807ac211642b3c9f506ac599666e",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "c4b76eb5633947b8c8812cc492a8edba620663bfb09da79dfe36f8bd7bb574ee",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "66b1ab0bfce9f922c65e3bea549ee3b624c6ac8476e8a3a9a3d1819ea6b994fa",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "a62adcfea094e794037050904288208c5525b4753db86cb31a1bd3294954cc08",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "898d0bf992440142d15d44fcaff0c6e62e4a17ca083f401263e4f49fa5edb30a",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "5f969a6bef1cecd897517f583dbebc11ba08b0e4a251400db252978e58a9c44b",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "de0e13890adf08569ada47a82bf2efbc5b32b2f93d2c347f59896f3fb21eaba6",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "ab14dead4511ef1ff71d639450f657850374c9f128e4b299bbbcd4695318546d",
-    //                "pos": "L"
-    //            },
-    //            {
-    //                "hash": "65433ea178bb0d6f0ae19cfe21b858fbadc974616fe7d088514b9ccaf626ea6e",
-    //                "pos": "L"
-    //            }
-    //        ],
-    //        "hash": "b52e6ba02e124eb245b42bf8cb95b6aedc0c7a67b313f23584d80dca23e57212",
-    //        "merkleRoot": "3ea59132fc323e633225e94803b4c78369e3e6838f1ef7c7c5cd6ac71b669498"
-    //    }
-    //    let merkleProof: MerkleProof = prepProofFromWoc(fromWoC)
+        txid = Sha256(reverseByteString(fromWoC.hash, 32n))
 
-    //    let bh: BlockHeader = {
-    //        version: reverseByteString(toByteString('2000a000'), 4n),
-    //        prevBlockHash: Sha256(reverseByteString(toByteString('00000000000000000abd345bd668994b2f1338e5197f95db8f59ac43b22f3d0d'), 32n)),
-    //        merkleRoot: Sha256(reverseByteString(toByteString('3ea59132fc323e633225e94803b4c78369e3e6838f1ef7c7c5cd6ac71b669498'), 32n)),
-    //        time: 1688719785n,
-    //        bits: reverseByteString(toByteString('180dab63'), 4n),
-    //        nonce: 602259041n
-    //    }
-    //
-    //    let result = blockchainTest.verify((self) => {
-    //        self.testBlockTxCount(bh, lastTxId, merkleProof, txCount)
-    //    })
-    //    expect(result.success, result.error).to.be.true
-    //})
+        result = blockchainTest.verify((self) => {
+            self.testTxIndex(txid, merkleProof, txIdx)
+        })
+        expect(result.success, result.error).to.be.true
+
+        txIdx = 40553n
+        fromWoC = {
+            blockHash:
+                '0000000000000000066242e860957a42b56cb11f1cc02671759453aa8657e6f7',
+            branches: [
+                {
+                    hash: 'd371c668aed1713efbaa400037c0348a05e3281c3e87a77a9cab61216c1cd6a3',
+                    pos: 'L',
+                },
+                {
+                    hash: 'ab8c463675f1cf6fc0afc202e90e0e97f054eaa5a61a1b9bb7e4105ba7bd15a4',
+                    pos: 'L',
+                },
+                {
+                    hash: '5a8791d2fa9aff57c88714c273c49d8535343c7215508c58af5cd5814434fb64',
+                    pos: 'L',
+                },
+                {
+                    hash: '694f599d5ef09f2eed1ae6a2416838766801a920a5c48134eefa5704812de0cf',
+                    pos: 'L',
+                },
+                {
+                    hash: '0ea2a1d74b70f7aa09e39eb8e8320cbafde281fd33398f3559a205df9c514906',
+                    pos: 'L',
+                },
+                {
+                    hash: '03c4eb008eab9c5ce3fc682341dceef454e8afab6c910d4fd839b4a5552cf0dd',
+                    pos: 'L',
+                },
+                {
+                    hash: 'b36dedc394a4b6b1b141c50c9e0dd0e248e61688f915182d09502228d9942fc3',
+                    pos: 'L',
+                },
+                {
+                    hash: '1ec1223bd12009dd2025e11d391dc4484bb3807ac211642b3c9f506ac599666e',
+                    pos: 'L',
+                },
+                {
+                    hash: 'c4b76eb5633947b8c8812cc492a8edba620663bfb09da79dfe36f8bd7bb574ee',
+                    pos: 'L',
+                },
+                {
+                    hash: '66b1ab0bfce9f922c65e3bea549ee3b624c6ac8476e8a3a9a3d1819ea6b994fa',
+                    pos: 'L',
+                },
+                {
+                    hash: 'a62adcfea094e794037050904288208c5525b4753db86cb31a1bd3294954cc08',
+                    pos: 'L',
+                },
+                {
+                    hash: '898d0bf992440142d15d44fcaff0c6e62e4a17ca083f401263e4f49fa5edb30a',
+                    pos: 'L',
+                },
+                {
+                    hash: '5f969a6bef1cecd897517f583dbebc11ba08b0e4a251400db252978e58a9c44b',
+                    pos: 'L',
+                },
+                {
+                    hash: 'de0e13890adf08569ada47a82bf2efbc5b32b2f93d2c347f59896f3fb21eaba6',
+                    pos: 'L',
+                },
+                {
+                    hash: 'ab14dead4511ef1ff71d639450f657850374c9f128e4b299bbbcd4695318546d',
+                    pos: 'L',
+                },
+                {
+                    hash: '65433ea178bb0d6f0ae19cfe21b858fbadc974616fe7d088514b9ccaf626ea6e',
+                    pos: 'L',
+                },
+            ],
+            hash: 'b52e6ba02e124eb245b42bf8cb95b6aedc0c7a67b313f23584d80dca23e57212',
+            merkleRoot:
+                '3ea59132fc323e633225e94803b4c78369e3e6838f1ef7c7c5cd6ac71b669498',
+        }
+        merkleProof = prepProofFromWoc(fromWoC)
+
+        txid = Sha256(reverseByteString(fromWoC.hash, 32n))
+
+        result = blockchainTest.verify((self) => {
+            self.testTxIndex(txid, merkleProof, txIdx)
+        })
+        expect(result.success, result.error).to.be.true
+    })
+
+    it('should pass blockTxCount', () => {
+        const txCount = 40554n
+        const lastTxId = Sha256(
+            reverseByteString(
+                toByteString(
+                    'b52e6ba02e124eb245b42bf8cb95b6aedc0c7a67b313f23584d80dca23e57212'
+                ),
+                32n
+            )
+        )
+        const fromWoC = {
+            blockHash:
+                '0000000000000000066242e860957a42b56cb11f1cc02671759453aa8657e6f7',
+            branches: [
+                {
+                    hash: 'd371c668aed1713efbaa400037c0348a05e3281c3e87a77a9cab61216c1cd6a3',
+                    pos: 'L',
+                },
+                {
+                    hash: 'ab8c463675f1cf6fc0afc202e90e0e97f054eaa5a61a1b9bb7e4105ba7bd15a4',
+                    pos: 'L',
+                },
+                {
+                    hash: '5a8791d2fa9aff57c88714c273c49d8535343c7215508c58af5cd5814434fb64',
+                    pos: 'L',
+                },
+                {
+                    hash: '694f599d5ef09f2eed1ae6a2416838766801a920a5c48134eefa5704812de0cf',
+                    pos: 'L',
+                },
+                {
+                    hash: '0ea2a1d74b70f7aa09e39eb8e8320cbafde281fd33398f3559a205df9c514906',
+                    pos: 'L',
+                },
+                {
+                    hash: '03c4eb008eab9c5ce3fc682341dceef454e8afab6c910d4fd839b4a5552cf0dd',
+                    pos: 'L',
+                },
+                {
+                    hash: 'b36dedc394a4b6b1b141c50c9e0dd0e248e61688f915182d09502228d9942fc3',
+                    pos: 'L',
+                },
+                {
+                    hash: '1ec1223bd12009dd2025e11d391dc4484bb3807ac211642b3c9f506ac599666e',
+                    pos: 'L',
+                },
+                {
+                    hash: 'c4b76eb5633947b8c8812cc492a8edba620663bfb09da79dfe36f8bd7bb574ee',
+                    pos: 'L',
+                },
+                {
+                    hash: '66b1ab0bfce9f922c65e3bea549ee3b624c6ac8476e8a3a9a3d1819ea6b994fa',
+                    pos: 'L',
+                },
+                {
+                    hash: 'a62adcfea094e794037050904288208c5525b4753db86cb31a1bd3294954cc08',
+                    pos: 'L',
+                },
+                {
+                    hash: '898d0bf992440142d15d44fcaff0c6e62e4a17ca083f401263e4f49fa5edb30a',
+                    pos: 'L',
+                },
+                {
+                    hash: '5f969a6bef1cecd897517f583dbebc11ba08b0e4a251400db252978e58a9c44b',
+                    pos: 'L',
+                },
+                {
+                    hash: 'de0e13890adf08569ada47a82bf2efbc5b32b2f93d2c347f59896f3fb21eaba6',
+                    pos: 'L',
+                },
+                {
+                    hash: 'ab14dead4511ef1ff71d639450f657850374c9f128e4b299bbbcd4695318546d',
+                    pos: 'L',
+                },
+                {
+                    hash: '65433ea178bb0d6f0ae19cfe21b858fbadc974616fe7d088514b9ccaf626ea6e',
+                    pos: 'L',
+                },
+            ],
+            hash: 'b52e6ba02e124eb245b42bf8cb95b6aedc0c7a67b313f23584d80dca23e57212',
+            merkleRoot:
+                '3ea59132fc323e633225e94803b4c78369e3e6838f1ef7c7c5cd6ac71b669498',
+        }
+        const merkleProof: MerkleProof = prepProofFromWoc(fromWoC)
+
+        const bh: BlockHeader = {
+            version: reverseByteString(toByteString('2000a000'), 4n),
+            prevBlockHash: Sha256(
+                reverseByteString(
+                    toByteString(
+                        '00000000000000000abd345bd668994b2f1338e5197f95db8f59ac43b22f3d0d'
+                    ),
+                    32n
+                )
+            ),
+            merkleRoot: Sha256(
+                reverseByteString(
+                    toByteString(
+                        '3ea59132fc323e633225e94803b4c78369e3e6838f1ef7c7c5cd6ac71b669498'
+                    ),
+                    32n
+                )
+            ),
+            time: 1688719785n,
+            bits: reverseByteString(toByteString('180dab63'), 4n),
+            nonce: 602259041n,
+        }
+
+        const result = blockchainTest.verify((self) => {
+            self.testBlockTxCount(lastTxId, merkleProof, txCount)
+        })
+        expect(result.success, result.error).to.be.true
+    })
 })
 
 function prepProofFromWoc(proof: any): MerkleProof {
