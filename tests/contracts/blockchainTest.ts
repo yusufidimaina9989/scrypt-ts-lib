@@ -18,13 +18,8 @@ export class BlockchainTest extends SmartContract {
     }
 
     @method()
-    public testLastTxInBlock(
-        txid: Sha256,
-        bh: BlockHeader,
-        merkleProof: MerkleProof,
-        res: boolean
-    ) {
-        assert(Blockchain.lastTxInBlock(txid, bh, merkleProof, 32) == res)
+    public testLastTxInBlock(merkleProof: MerkleProof, res: boolean) {
+        assert(Blockchain.isLastTxInBlock(merkleProof, 32) == res)
     }
 
     @method()
@@ -51,21 +46,17 @@ export class BlockchainTest extends SmartContract {
         assert(Blockchain.blockHeight(bh, coinbaseTx, merkleProof, 32) == res)
     }
 
-    //@method()
-    //public testTxIndex(
-    //    merkleProof: MerkleProof,
-    //    res: bigint
-    //) {
-    //    assert(Blockchain.txIndex(merkleProof) == res)
-    //}
+    @method()
+    public testTxIndex(txid: Sha256, merkleProof: MerkleProof, res: bigint) {
+        assert(Blockchain.txIndex(txid, merkleProof, 32) == res)
+    }
 
-    //@method()
-    //public testBlockTxCount(
-    //    bh: BlockHeader,
-    //    lastTxId: Sha256,
-    //    merkleProof: MerkleProof,
-    //    res: bigint
-    //) {
-    //    assert(Blockchain.blockTxCount(bh, lastTxId, merkleProof) == res)
-    //}
+    @method()
+    public testBlockTxCount(
+        lastTxId: Sha256,
+        merkleProof: MerkleProof,
+        res: bigint
+    ) {
+        assert(Blockchain.blockTxCount(lastTxId, merkleProof, 32) == res)
+    }
 }

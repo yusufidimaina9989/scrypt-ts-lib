@@ -41,74 +41,64 @@ export class Blockchain extends SmartContractLib {
         )
     }
 
-    // Is txid the last transaction in a block
+    // Check if tx is the last within block using its merkle path.
     @method()
-    static lastTxInBlock(
-        txid: Sha256,
-        bh: BlockHeader,
-        merkleProof: MerkleProof,
-        depth: number
-    ): boolean {
+    static isLastTxInBlock(merkleProof: MerkleProof, depth: number): boolean {
         let last = true
-        let root = txid
 
         for (let i = 0; i < depth; i++) {
             const node = merkleProof[i]
 
             if (node.pos != MerklePath.INVALID_NODE) {
-                // IF LAST ELEMENT:
-                // - A non-duplicate node cannot ever be on the right.
-                const isDuplicate = node.hash == root
-                if (!isDuplicate && node.pos == MerklePath.RIGHT_NODE) {
+                if (node.pos != MerklePath.LEFT_NODE) {
                     last = false
                 }
-
-                root = Sha256(
-                    node.pos == MerklePath.LEFT_NODE
-                        ? hash256(node.hash + root)
-                        : hash256(root + node.hash)
-                )
             }
         }
 
-        return last && root == bh.merkleRoot
+        return last
     }
 
-    // TODO:
-    // The function below assumes there cannot be any duplicate nodes on the left-hand side,
-    // which is false.
-    //// Calculate a tx's index in a block from its merkle path.
-    //// Goes from top to bottom, the path basically encodes the index in binary form.
-    //// left/L means 1, and right/R 0: e.g., (L, R, L) denotes 101 in binary, and 5 in decimal
-    //@method()
-    //static txIndex(merkleProof: MerkleProof): bigint {
-    //    let sum = 0n
+    // Calculate a tx's index in a block from its merkle path.
+    @method()
+    static txIndex(
+        txid: Sha256,
+        merkleProof: MerkleProof,
+        depth: number
+    ): bigint {
+        let root = txid
+        let sum = 0n
 
-    //    // traverse the path from top to bottom
-    //    for (let i = 0; i < MerklePath.DEPTH; i++) {
-    //        const node = merkleProof[Number(MerklePath.DEPTH) - i - 1]
+        for (let i = 0; i < depth; i++) {
+            const node = merkleProof[i]
 
-    //        if (node.pos != MerklePath.INVALID_NODE) {
-    //            sum *= 2n
-    //            if (node.pos == MerklePath.LEFT_NODE) {
-    //                sum++
-    //            }
-    //        }
-    //    }
-    //    return sum
-    //}
+            if (node.pos != MerklePath.INVALID_NODE) {
+                if (node.pos == MerklePath.LEFT_NODE) {
+                    // Check if duplicate.
+                    if (root != node.hash) {
+                        sum += lshift(1n, BigInt(i))
+                    }
+                    root = Sha256(hash256(node.hash + root))
+                } else {
+                    root = Sha256(hash256(root + node.hash))
+                }
+            }
+        }
 
-    //// Get number of transactions in a block.
-    //@method()
-    //static blockTxCount(
-    //    bh: BlockHeader,
-    //    lastTxid: Sha256,
-    //    merkleProof: MerkleProof
-    //): bigint {
-    //    // Ensure this tx is indeed the last one.
-    //    assert(Blockchain.lastTxInBlock(lastTxid, bh, merkleProof))
-    //    return Blockchain.txIndex(merkleProof) + 1n
-    //}
+        return sum
+    }
+
+    // Get number of transactions in a block based using its last tx merkle path.
+    @method()
+    static blockTxCount(
+        lastTxid: Sha256,
+        merkleProof: MerkleProof,
+        depth: number
+    ): bigint {
+        // Ensure this tx is indeed the last one.
+        assert(Blockchain.isLastTxInBlock(merkleProof, depth))
+        return Blockchain.txIndex(lastTxid, merkleProof, depth) + 1n
+    }
 
     // Is block header valid with difficulty meeting target.
     @method()
