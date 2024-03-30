@@ -5,9 +5,11 @@
 
 A collection of contracts and libraries for writing smart contracts with [`scrypt-ts`](https://www.npmjs.com/package/scrypt-ts).
 
+Learn more about how to write smart contracts with `sCrypt` at https://scrypt.io.
+
 ## Installation
 
-You can install `scrypt-ts-lib` to your project with this command:
+Install `scrypt-ts-lib` to your project with this command:
 
 ```sh
 npm install scrypt-ts-lib
@@ -27,7 +29,7 @@ or
 import { Mimc7 } from "scrypt-ts-lib/dist/hash/mimc7";
 ```
 
-Then use them in your contract like:
+Then use them in a contract like:
 
 ```ts
 class MyContract extends SmartContract {
@@ -42,7 +44,3 @@ class MyContract extends SmartContract {
 ## Contributing
 
 Pull requests are welcome.
-
-## Learn More
-
-You can learn more about how to write smart contracts with `scrypt-ts` from [here](https://scrypt.io/scrypt-ts/).
